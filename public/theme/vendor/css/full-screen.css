@@ -1,0 +1,39 @@
+.body-full-screen-salman:-webkit-full-screen {
+  background-color: #e4708a;
+  width: 100vw;
+  height: 100vh;
+}
+
+.body-full-screen-salman:-webkit-full-screen p {
+  visibility: visible;
+}
+
+.body-full-screen-salman:-moz-full-screen {
+  background-color: #e4708a;
+  width: 100vw;
+  height: 100vh;
+}
+
+.body-full-screen-salman:-moz-full-screen p {
+  visibility: visible;
+}
+
+.body-full-screen-salman:-ms-fullscreen {
+  background-color: #e4708a;
+  width: 100vw;
+  height: 100vh;
+}
+
+.body-full-screen-salman:-ms-fullscreen p {
+  visibility: visible;
+}
+
+.body-full-screen-salman:fullscreen {
+  background-color: #e4708a;
+  width: 100vw;
+  height: 100vh;
+}
+
+.body-full-screen-salman:fullscreen p {
+  visibility: visible;
+}

@@ -1,0 +1,142 @@
+<?php
+
+namespace App\Http\Controllers;
+use App\AssignMarks;
+use App\Classes;
+use App\Sections;
+use App\Subjects;
+use App\Students;
+use App\Examination;
+use DB;
+
+use Illuminate\Http\Request;
+
+class ViewResultController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    public function viewSingleResultPlayToFive(Request $request)
+    {
+        if($request->ajax()){
+            $studentID = $request->get('studentID');
+            $year = date('Y');
+            
+            $output = '<table class="table table-hover table-border" style="max-width:1000px; overflow-y:scroll;">
+		                    <thead>
+		                    	<tr>
+		                            <th rowspan="2" style="border:1px solid #CCC;">Subjects</th>
+		                            <th rowspan="2" style="border:1px solid #CCC;">Total</th>
+		                            <th rowspan="2" style="border:1px solid #CCC;">Pass Mark</th>
+		                            <th colspan="3" style="border:1px solid #CCC;">First Term</th>
+		                            <th colspan="3" style="border:1px solid #CCC;">Second Term</th>
+		                            <th colspan="3" style="border:1px solid #CCC;">Final Exam</th>
+		                            <th rowspan="2" style="border:1px solid #CCC;">Total</th>
+		                            <th rowspan="2" style="border:1px solid #CCC;">Average</th>
+		                            <th rowspan="2" style="border:1px solid #CCC;">GPA</th>
+		                        </tr>
+		                        <tr>
+		                        	<th style="border:1px solid #CCC;">Obtained</th>
+		                        	<th style="border:1px solid #CCC;">Highest</th>
+		                        	<th style="border:1px solid #CCC;">Grade</th>
+		                        	
+		                        	<th style="border:1px solid #CCC;">Obtained</th>
+		                        	<th style="border:1px solid #CCC;">Highest</th>
+		                        	<th style="border:1px solid #CCC;">Grade</th>
+		                        	
+		                        	<th style="border:1px solid #CCC;">Obtained</th>
+		                        	<th style="border:1px solid #CCC;">Highest</th>
+		                        	<th style="border:1px solid #CCC;">Grade</th>
+		                        </tr>
+		                    </thead>
+		                    <tbody>';
+            $student_results = DB::table('playto_five_results')
+                            ->join('subjects', 'playto_five_results.subject', '=', 'subjects.id')
+                            ->select('playto_five_results.*', 'subjects.subject_name as subject__name')
+                            ->where('student','=',$studentID)
+                            ->where('year','=',$year)
+                            ->orderBy('id', 'asc')
+                            ->get();
+
+            $total_student_results = $student_results->count();
+            if ($total_student_results > 0) {
+
+                foreach ($student_results as $student_result) {
+
+                	$max__marks = DB::table('playto_five_results')
+                					->where('subject', '=', $student_result->subject )
+                					->where('exam', '=', $student_result->exam )
+                					->max('total_marks');
+                	$total__marks = ( $student_result->total_marks * 1 ) + ( $student_result->total_marks * 1 ) + ( $student_result->total_marks * 1 );
+                	$average = ( $total__marks / 3 );
+                	$got__gpa = '';
+                	if ( $average > 90 ) {
+                		$got__gpa = 'A+';
+                	}else if( $average > 80 ) {
+                		$got__gpa = 'A';
+                	}else if( $average > 70 ) {
+                		$got__gpa = 'A-';
+                	}else if( $average > 60 ) {
+                		$got__gpa = 'B';
+                	}else if( $average > 50 ) {
+                		$got__gpa = 'C';
+                	}else if( $average > 40 ) {
+                		$got__gpa = 'D';
+                	}else{
+                		$got__gpa = 'F';
+                	}
+
+                    $output .=' <tr>
+		                            <td>'.$student_result->subject__name.'</td>
+		                            <td>100</td>
+		                            <td>40</td>';
+		            if ( $student_result->exam == 1 ) {
+			            $output .= '<td>'.$student_result->total_marks.'</td>
+		                            <td>'.$max__marks.'</td>
+		                            <td>'.$student_result->got_grade.'</td>';
+		            }else{
+		            	$output .= '<td colspan="3"> Marks Not Added!</td>';
+		            }
+
+					if ( $student_result->exam == 2 ) {
+			            $output .= '<td>'.$student_result->total_marks.'</td>
+		                            <td>'.$max__marks.'</td>
+		                            <td>'.$student_result->got_grade.'</td>';
+		            }else{
+		            	$output .= '<td colspan="3"> Marks Not Added!</td>';
+		            }
+
+					if ( $student_result->exam == 3 ) {
+			            $output .= '<td>'.$student_result->total_marks.'</td>
+		                            <td>'.$max__marks.'</td>
+		                            <td>'.$student_result->got_grade.'</td>';
+		            }else{
+		            	$output .= '<td colspan="3"> Marks Not Added!</td>';
+		            }
+
+		                $output .= '<td>'.$total__marks.'</td>
+		                            <td>'.$average.'</td>
+		                            <td>'.$got__gpa.'</td>
+		                        </tr>';
+                }
+
+            }else{
+                $output .= '
+                    			<tr><td colspan="15" style="text-align:center;"><h4>No Data Found!</h4></td></tr>
+                ';
+            }
+            $output .= '
+                            </tbody>
+                        </table>
+                        ';
+            
+            $data = array(
+                    'allData'   =>  $output
+                );
+            
+            return response()->json( $data );
+        }
+    }
+}
